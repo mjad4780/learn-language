@@ -1,0 +1,189 @@
+# English Learning Overlay App - Implementation Plan
+
+A Flutter Android app that displays English learning sentences (with Arabic translations) as a floating system overlay at user-defined intervals, similar to Azkar apps. Uses `SYSTEM_ALERT_WINDOW` instead of notifications.
+
+## User Review Required
+
+> [!IMPORTANT]
+> **No Android device detected.** Only Windows/Chrome/Edge are available. The app will be built and analyzed for errors, but **you will need to build and test the APK on a physical Android device or emulator yourself**. I'll ensure the code compiles cleanly via `flutter analyze`.
+
+> [!NOTE]
+> The `flutter_overlay_window` package requires Android-specific native code. The overlay and foreground service functionality **cannot be tested on Windows/Chrome** — only on Android.
+
+---
+
+## Proposed Changes
+
+### Project Scaffold
+
+#### [NEW] Flutter project at `c:\Users\user\Downloads\learn english`
+- Create via `flutter create` with package name `com.app.learn_english`
+- Android-only target (though Flutter creates multi-platform by default)
+
+#### Dependencies (pubspec.yaml)
+| Package | Purpose |
+|---------|---------|
+| `flutter_overlay_window` | System overlay display |
+| `flutter_tts` | Text-to-speech pronunciation |
+| `hive` + `hive_flutter` | Local storage for settings |
+| `flutter_riverpod` | State management |
+| `google_fonts` | Premium typography |
+
+---
+
+### Data Layer
+
+#### [NEW] `lib/models/sentence.dart`
+- `Sentence` class with `id`, `english`, `arabic`, `isLearned` fields
+
+#### [NEW] `assets/sentences.json`
+- 50+ English sentences with Arabic translations
+- Categories: greetings, daily life, travel, emotions, business
+
+#### [NEW] `lib/core/sentence_repository.dart`
+- Load sentences from JSON
+- Random selection avoiding consecutive repeats
+- Filter out learned sentences
+- Daily count tracking
+
+---
+
+### Core Services
+
+#### [NEW] `lib/core/services/overlay_service.dart`
+- Wrapper around `flutter_overlay_window`
+- Show/close overlay
+- Permission request handling
+- Prevent multiple overlays stacking
+
+#### [NEW] `lib/core/services/tts_service.dart`
+- Wrapper around `flutter_tts`
+- Speak English sentence
+- Configure voice, speed, pitch
+
+#### [NEW] `lib/core/services/timer_service.dart`
+- Periodic timer with configurable interval (5/10/15/30 min)
+- Start/stop/reset
+- Triggers overlay display
+
+#### [NEW] `lib/core/services/storage_service.dart`
+- Hive-based persistence for:
+  - Selected interval
+  - Service running state
+  - Learned sentence IDs
+  - Daily display count
+
+---
+
+### State Management (Riverpod)
+
+#### [NEW] `lib/core/providers.dart`
+- `settingsProvider` — interval, running state
+- `sentenceProvider` — current sentence, history
+- `ttsProvider` — TTS service instance
+- `overlayProvider` — overlay service instance
+
+---
+
+### Overlay UI
+
+#### [NEW] `lib/features/overlay/overlay_main.dart`
+- **Overlay entry point** (registered with `flutter_overlay_window`)
+- Separate `main()` for overlay process
+
+#### [NEW] `lib/features/overlay/overlay_widget.dart`
+- Glassmorphic card design with:
+  - English text (large, bold)
+  - Arabic translation (smaller, lighter)
+  - Close (X) button
+  - Play pronunciation (TTS) button
+  - "Mark as learned" button
+  - Countdown progress bar (20s auto-dismiss)
+  - Fade-in + slide-up animation
+  - Swipe to see next sentence
+- Draggable via `flutter_overlay_window` config
+
+---
+
+### Main App UI
+
+#### [NEW] `lib/features/settings/settings_screen.dart`
+- Premium Material 3 design with gradient background
+- Interval selector (custom wheel/dropdown)
+- Animated Start/Stop toggle switch
+- Permission status indicator
+- Daily sentence count display
+- Statistics section
+
+#### [NEW] `lib/main.dart`
+- App entry point
+- Hive initialization
+- Material 3 theme with custom color scheme
+- Riverpod scope
+
+#### [NEW] `lib/core/theme.dart`
+- Custom Material 3 theme
+- Color palette (deep purple/indigo gradients)
+- Typography via Google Fonts
+
+---
+
+### Android Configuration
+
+#### [MODIFY] `android/app/src/main/AndroidManifest.xml`
+- Add `SYSTEM_ALERT_WINDOW` permission
+- Add `FOREGROUND_SERVICE` permission
+- Add `RECEIVE_BOOT_COMPLETED` for service restart
+- Configure overlay entry point
+
+#### [MODIFY] `android/app/build.gradle`
+- Set `minSdkVersion` to 23 (for overlay support)
+- Set `compileSdkVersion` to 34
+
+---
+
+## Project Structure
+```
+lib/
+├── main.dart                          # App entry point
+├── core/
+│   ├── theme.dart                     # Material 3 theme
+│   ├── providers.dart                 # Riverpod providers
+│   ├── sentence_repository.dart       # Sentence data access
+│   └── services/
+│       ├── overlay_service.dart       # Overlay management
+│       ├── tts_service.dart           # Text-to-speech
+│       ├── timer_service.dart         # Interval timer
+│       └── storage_service.dart       # Hive persistence
+├── models/
+│   └── sentence.dart                  # Sentence model
+└── features/
+    ├── overlay/
+    │   ├── overlay_main.dart          # Overlay entry point
+    │   └── overlay_widget.dart        # Overlay UI
+    └── settings/
+        └── settings_screen.dart       # Main settings screen
+assets/
+└── sentences.json                     # Sentence database
+```
+
+---
+
+## Verification Plan
+
+### Automated Verification
+- Run `flutter analyze` to check for compilation errors and lint issues
+- Run `dart format` to ensure code style consistency
+
+### Manual Verification (User Required)
+Since no Android device is connected to this environment:
+
+1. **Build APK**: Run `flutter build apk --debug` on your machine
+2. **Install on Android device/emulator** (API 23+)
+3. **Test Permission Flow**: App should request "Draw over other apps" permission on first launch
+4. **Test Interval Selection**: Select 5 minutes, verify overlay appears after 5 minutes
+5. **Test Overlay UI**: Verify glassmorphic design, animations, countdown bar, close button, TTS button
+6. **Test Background Service**: Minimize app, verify overlay still appears at interval
+7. **Test Draggable**: Drag overlay around screen
+8. **Test Auto-dismiss**: Verify overlay disappears after 20 seconds
+9. **Test Mark as Learned**: Tap "learned" button, verify sentence doesn't reappear
