@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -17,11 +15,12 @@ class ToggleButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<SettingsCubit, SettingsState>(
       builder: (context, state) {
-        log("sssssssssss${state.isRunning}");
+        final isRunning = state is SettingsLoaded ? state.isRunning : false;
+
         return AnimatedBuilder(
           animation: pulseAnimation,
           builder: (context, child) {
-            final scale = state.isRunning ? pulseAnimation.value : 1.0;
+            final scale = isRunning ? pulseAnimation.value : 1.0;
             return Transform.scale(scale: scale, child: child);
           },
           child: GestureDetector(
@@ -33,7 +32,7 @@ class ToggleButton extends StatelessWidget {
               height: 180,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: state.isRunning
+                gradient: isRunning
                     ? const LinearGradient(
                         colors: [Color(0xFF00E676), Color(0xFF00C853)],
                         begin: Alignment.topLeft,
@@ -49,7 +48,7 @@ class ToggleButton extends StatelessWidget {
                       ),
                 boxShadow: [
                   BoxShadow(
-                    color: state.isRunning
+                    color: isRunning
                         ? const Color(0xFF00E676).withValues(alpha: 0.4)
                         : AppTheme.primaryColor.withValues(alpha: 0.3),
                     blurRadius: 30,
@@ -61,15 +60,13 @@ class ToggleButton extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    state.isRunning
-                        ? Icons.stop_rounded
-                        : Icons.play_arrow_rounded,
+                    isRunning ? Icons.stop_rounded : Icons.play_arrow_rounded,
                     color: Colors.white,
                     size: 56,
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    state.isRunning ? 'STOP' : 'START',
+                    isRunning ? 'STOP' : 'START',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,

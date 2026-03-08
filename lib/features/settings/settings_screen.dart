@@ -47,7 +47,6 @@ class _SettingsScreenState extends State<SettingsScreen>
         decoration: const BoxDecoration(gradient: AppTheme.backgroundGradient),
         child: SafeArea(
           child: SingleChildScrollView(
-            // physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             child: Column(
               children: [
@@ -60,7 +59,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                 const SizedBox(height: 28),
                 const StatsCard(),
                 const SizedBox(height: 28),
-                AddSentencesCard(),
+                const AddSentencesCard(),
                 const SizedBox(height: 28),
                 const ArticlesEntryCard(),
                 const SizedBox(height: 28),

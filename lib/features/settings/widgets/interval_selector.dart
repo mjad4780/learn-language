@@ -6,9 +6,9 @@ import '../presentation/cubit/settings_state.dart';
 import '../../../core/theme.dart';
 import '../../../core/shared/widgets/glass_card.dart';
 
-/// Interval selector card with 5/10/15/30 minute options.
+/// Interval selector card with 5/10/15 minute options.
 class IntervalSelector extends StatelessWidget {
-  static const List<int> _intervals = [5, 10, 15, 30];
+  static const List<int> _intervals = [5, 10, 15];
 
   const IntervalSelector({super.key});
 
@@ -16,13 +16,20 @@ class IntervalSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<SettingsCubit, SettingsState>(
       builder: (context, state) {
+        final intervalMinutes = state is SettingsLoaded
+            ? state.intervalMinutes
+            : 15;
+
         return GlassCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _IntervalHeader(state: state),
+              _IntervalHeader(intervalMinutes: intervalMinutes),
               const SizedBox(height: 20),
-              _IntervalOptions(state: state, intervals: _intervals),
+              _IntervalOptions(
+                selectedMinutes: intervalMinutes,
+                intervals: _intervals,
+              ),
             ],
           ),
         );
@@ -32,9 +39,9 @@ class IntervalSelector extends StatelessWidget {
 }
 
 class _IntervalHeader extends StatelessWidget {
-  final SettingsState state;
+  final int intervalMinutes;
 
-  const _IntervalHeader({required this.state});
+  const _IntervalHeader({required this.intervalMinutes});
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +65,7 @@ class _IntervalHeader extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(
-            'Every ${state.intervalMinutes} min',
+            'Every $intervalMinutes min',
             style: const TextStyle(
               color: AppTheme.accentColor,
               fontSize: 13,
@@ -72,17 +79,20 @@ class _IntervalHeader extends StatelessWidget {
 }
 
 class _IntervalOptions extends StatelessWidget {
-  final SettingsState state;
+  final int selectedMinutes;
   final List<int> intervals;
 
-  const _IntervalOptions({required this.state, required this.intervals});
+  const _IntervalOptions({
+    required this.selectedMinutes,
+    required this.intervals,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: intervals.map((m) {
-        final selected = state.intervalMinutes == m;
+        final selected = selectedMinutes == m;
         return GestureDetector(
           onTap: () => context.read<SettingsCubit>().setInterval(m),
           child: AnimatedContainer(

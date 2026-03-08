@@ -27,10 +27,10 @@ class OverlayService {
 
   /// Show the overlay window.
   Future<void> showOverlay({String? title}) async {
-    // Check if it's already active to avoid duplicate.
     if (await isOverlayActive()) {
-      dev.log('Overlay already active. Not showing again.');
-      return;
+      dev.log('Overlay already active. Closing the old one first.');
+      await closeOverlay();
+      await Future.delayed(const Duration(milliseconds: 500));
     }
 
     try {
@@ -41,7 +41,7 @@ class OverlayService {
         flag: OverlayFlag.defaultFlag,
         visibility: NotificationVisibility.visibilityPublic,
         positionGravity: PositionGravity.auto,
-        height: 300,
+        height: 400,
         width: WindowSize.matchParent,
       );
     } catch (e) {

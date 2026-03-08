@@ -17,15 +17,24 @@ class SettingsCubit extends Cubit<SettingsState> {
   final OverlayService overlayService = getIt<OverlayService>();
   final SentenceRepository sentenceRepo = getIt<SentenceRepository>();
 
-  SettingsCubit() : super(const SettingsState());
+  SettingsCubit() : super(const SettingsInitial());
+
+  // ─── Helpers ───────────────────────────────────────────────────────────────
+
+  /// Returns the current loaded state, or a default one.
+  SettingsLoaded get _loaded => state is SettingsLoaded
+      ? state as SettingsLoaded
+      : const SettingsLoaded();
+
+  // ─── Init ──────────────────────────────────────────────────────────────────
 
   /// Initialize state from storage.
   Future<void> init() async {
+    emit(const SettingsLoading());
     final hasPermission = await overlayService.isPermissionGranted();
-    final isRunning = await FlutterBackgroundService().isRunning();
-
+    final isRunning = storage.getIsRunning();
     emit(
-      state.copyWith(
+      SettingsLoaded(
         intervalMinutes: storage.getInterval(),
         isRunning: isRunning,
         dailyCount: storage.getDailyCount(),
@@ -36,52 +45,50 @@ class SettingsCubit extends Cubit<SettingsState> {
     );
   }
 
+  // ─── Settings changes ──────────────────────────────────────────────────────
+
   Future<void> setInterval(int minutes) async {
     await storage.setInterval(minutes);
-    emit(state.copyWith(intervalMinutes: minutes));
-    // The background service checks storage automatically every tick.
+    emit(_loaded.copyWith(intervalMinutes: minutes));
   }
 
   /// Toggle the service on/off.
   void toggleService() {
-    if (state.isRunning) {
-      log('Toggling off from cubit state');
+    if (_loaded.isRunning) {
+      log('Toggling off from cubit state stopService');
       stopService();
     } else {
-      log('Toggling on from cubit state');
+      log('Toggling on from cubit state startService');
       startService();
     }
   }
 
   /// Start the overlay service.
   Future<void> startService() async {
-    // Check/request permission first
     bool hasPermission = await overlayService.isPermissionGranted();
     if (!hasPermission) {
       hasPermission = await overlayService.requestPermission();
-      emit(state.copyWith(hasPermission: hasPermission));
+      emit(_loaded.copyWith(hasPermission: hasPermission));
       if (!hasPermission) return;
     }
 
     await storage.setIsRunning(true);
-    emit(state.copyWith(isRunning: true, hasPermission: true));
+    emit(_loaded.copyWith(isRunning: true, hasPermission: true));
 
     final service = FlutterBackgroundService();
     service.isRunning().then((isRunning) async {
       if (!isRunning) {
         await service.startService();
       }
-      // Force background to update its internal flag
       service.invoke('updateConfig', {'isRunning': true});
     });
   }
 
   /// Stop the overlay service.
   Future<void> stopService() async {
-    emit(state.copyWith(isRunning: false));
+    emit(_loaded.copyWith(isRunning: false));
 
     final service = FlutterBackgroundService();
-    // We just tell the background service to go dormant, instead of killing it
     service.invoke('updateConfig', {'isRunning': false});
     await overlayService.closeOverlay();
     await storage.setIsRunning(false);
@@ -91,10 +98,11 @@ class SettingsCubit extends Cubit<SettingsState> {
   Future<void> refreshState() async {
     final hasPermission = await overlayService.isPermissionGranted();
     emit(
-      state.copyWith(
+      _loaded.copyWith(
         hasPermission: hasPermission,
         dailyCount: storage.getDailyCount(),
         learnedCount: sentenceRepo.learnedCount,
+        totalSentences: sentenceRepo.totalCount,
       ),
     );
   }

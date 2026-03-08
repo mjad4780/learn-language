@@ -26,6 +26,8 @@ Future<void> setupService() async {
 
   // Cubits
   getIt.registerLazySingleton<SettingsCubit>(() => SettingsCubit());
-  getIt.registerFactory<SentencesCubit>(() => SentencesCubit());
+  getIt.registerFactory<SentencesCubit>(
+    () => SentencesCubit(getIt<StorageService>(), getIt<SentenceRepository>()),
+  );
   getIt.registerFactory<ArticlesCubit>(() => ArticlesCubit());
 }

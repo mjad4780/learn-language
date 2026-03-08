@@ -13,57 +13,79 @@ class StatsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<SettingsCubit, SettingsState>(
       builder: (context, state) {
-        return GlassCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        if (state is SettingsLoaded) {
+          return _StatsContent(
+            dailyCount: state.dailyCount,
+            learnedCount: state.learnedCount,
+            totalSentences: state.totalSentences,
+          );
+        }
+
+        // Loading or initial — show skeleton placeholders
+        return _StatsContent(dailyCount: 0, learnedCount: 0, totalSentences: 0);
+      },
+    );
+  }
+}
+
+class _StatsContent extends StatelessWidget {
+  final int dailyCount;
+  final int learnedCount;
+  final int totalSentences;
+
+  const _StatsContent({
+    required this.dailyCount,
+    required this.learnedCount,
+    required this.totalSentences,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
             children: [
-              const Row(
-                children: [
-                  Icon(
-                    Icons.bar_chart_rounded,
-                    color: Color(0xFF00D2FF),
-                    size: 22,
-                  ),
-                  SizedBox(width: 10),
-                  Text(
-                    'Statistics',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  _Stat(
-                    Icons.today_rounded,
-                    'Today',
-                    '${state.dailyCount}',
-                    const Color(0xFF00E676),
-                  ),
-                  const SizedBox(width: 16),
-                  _Stat(
-                    Icons.school_rounded,
-                    'Learned',
-                    '${state.learnedCount}',
-                    const Color(0xFFFFD740),
-                  ),
-                  const SizedBox(width: 16),
-                  _Stat(
-                    Icons.library_books_rounded,
-                    'Total',
-                    '${state.totalSentences}',
-                    const Color(0xFF448AFF),
-                  ),
-                ],
+              Icon(Icons.bar_chart_rounded, color: Color(0xFF00D2FF), size: 22),
+              SizedBox(width: 10),
+              Text(
+                'Statistics',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
               ),
             ],
           ),
-        );
-      },
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              _Stat(
+                Icons.today_rounded,
+                'Today',
+                '$dailyCount',
+                const Color(0xFF00E676),
+              ),
+              const SizedBox(width: 16),
+              _Stat(
+                Icons.school_rounded,
+                'Learned',
+                '$learnedCount',
+                const Color(0xFFFFD740),
+              ),
+              const SizedBox(width: 16),
+              _Stat(
+                Icons.library_books_rounded,
+                'Total',
+                '$totalSentences',
+                const Color(0xFF448AFF),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

@@ -7,7 +7,7 @@ class OverlayViewState {
 
   const OverlayViewState({
     this.sentenceId = 0,
-    this.english = 'Loading...',
+    this.english = 'Waiting for data...',
     this.arabic = '',
     this.isLoaded = false,
   });

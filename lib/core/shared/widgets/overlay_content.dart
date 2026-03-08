@@ -29,7 +29,7 @@ class OverlayContent extends StatelessWidget {
 
               // English
               Text(
-                state.english,
+                state.english.isEmpty ? "No data..." : state.english,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 20,

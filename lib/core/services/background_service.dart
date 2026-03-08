@@ -84,10 +84,23 @@ void onStart(ServiceInstance service) async {
     }
 
     try {
-      // If overlay is already on screen, do nothing and wait for user to read/close it
-      if (await overlayService.isOverlayActive()) {
-        dev.log("Overlay is still active. Skipping this tick.");
-        return;
+      dev.log("Timer tick... Checking if overlay is active.");
+      // If overlay is still reporting as active at the 10s tick,
+      // it's a ghost overlay from a previous app crash or kill.
+      bool isActive = await overlayService.isOverlayActive();
+      if (isActive) {
+        dev.log("Ghost overlay detected. Closing it...");
+        await overlayService.closeOverlay();
+        dev.log("Waiting for overlay to completely close...");
+        await Future.delayed(const Duration(milliseconds: 2000));
+      }
+
+      dev.log("Fetching new sentence...");
+
+      // Ensure sentence array is populated in this background isolate
+      if (sentenceRepo.totalCount == 0) {
+        dev.log("Loading sentences from JSON in background isolate...");
+        await sentenceRepo.loadSentences();
       }
 
       // Time to show a new sentence!
@@ -95,18 +108,20 @@ void onStart(ServiceInstance service) async {
       await storage.incrementDailyCount();
 
       final data = json.encode({
-        'id': sentence.id,
+        'id': DateTime.now().millisecondsSinceEpoch,
         'english': sentence.english,
         'arabic': sentence.arabic,
       });
 
+      dev.log("Calling showOverlay...");
       // Show the overlay window from scratch
       await overlayService.showOverlay();
 
-      // Wait a moment for flutter UI engine to spin up inside the overlay
-      await Future.delayed(const Duration(milliseconds: 1500));
-
-      // Send the sentence data to the overlay UI
+      dev.log("Sharing data multiple times to ensure delivery...");
+      // Send the sentence data to the overlay UI repeatedly
+      // just in case the Flutter Engine in the background takes longer than 1500ms to spin up.
+      // OverlayCubit is updated to ignore redundant identical sends.
+      await Future.delayed(const Duration(milliseconds: 800));
       await FlutterOverlayWindow.shareData(data);
 
       if (service is AndroidServiceInstance) {
@@ -115,8 +130,9 @@ void onStart(ServiceInstance service) async {
           content: "Showing new sentence...",
         );
       }
-    } catch (e) {
-      dev.log("Error in timer: $e");
+      dev.log("Timer tick finished successfully.");
+    } catch (e, stack) {
+      dev.log("Error in timer: $e\n$stack");
     }
   });
 }

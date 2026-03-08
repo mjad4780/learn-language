@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/theme.dart';
 import '../../../core/shared/widgets/glass_card.dart';
-import '../../sentences/presentation/add_sentences_screen.dart';
+import '../../sentences/presentation/my_sentences_screen.dart';
+import '../presentation/cubit/settings_cubit.dart';
 
-/// Card that navigates to the Add Sentences screen.
+/// Card that navigates to the My Sentences screen.
 class AddSentencesCard extends StatelessWidget {
   const AddSentencesCard({super.key});
 
@@ -14,8 +16,12 @@ class AddSentencesCard extends StatelessWidget {
       onTap: () async {
         await Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => const AddSentencesScreen()),
+          MaterialPageRoute(builder: (_) => const MySentencesScreen()),
         );
+        // Refresh stats when returning from the sentences screen.
+        if (context.mounted) {
+          context.read<SettingsCubit>().refreshState();
+        }
       },
       child: GlassCard(
         child: Row(

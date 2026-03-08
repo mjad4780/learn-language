@@ -10,6 +10,7 @@ class SentenceForm extends StatelessWidget {
   final TextEditingController englishController;
   final TextEditingController arabicController;
   final bool isEditing;
+  final bool isSaving;
   final VoidCallback onSubmit;
 
   const SentenceForm({
@@ -19,6 +20,7 @@ class SentenceForm extends StatelessWidget {
     required this.arabicController,
     required this.isEditing,
     required this.onSubmit,
+    this.isSaving = false,
   });
 
   @override
@@ -52,7 +54,11 @@ class SentenceForm extends StatelessWidget {
                 const SizedBox(height: 14),
                 _ArabicField(controller: arabicController),
                 const SizedBox(height: 18),
-                _SubmitButton(isEditing: isEditing, onSubmit: onSubmit),
+                _SubmitButton(
+                  isEditing: isEditing,
+                  onSubmit: onSubmit,
+                  isSaving: isSaving,
+                ),
               ],
             ),
           ),
@@ -132,9 +138,14 @@ class _ArabicField extends StatelessWidget {
 
 class _SubmitButton extends StatelessWidget {
   final bool isEditing;
+  final bool isSaving;
   final VoidCallback onSubmit;
 
-  const _SubmitButton({required this.isEditing, required this.onSubmit});
+  const _SubmitButton({
+    required this.isEditing,
+    required this.onSubmit,
+    this.isSaving = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -153,8 +164,17 @@ class _SubmitButton extends StatelessWidget {
           ],
         ),
         child: ElevatedButton.icon(
-          onPressed: onSubmit,
-          icon: Icon(isEditing ? Icons.check_rounded : Icons.add_rounded),
+          onPressed: isSaving ? null : onSubmit,
+          icon: isSaving
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              : Icon(isEditing ? Icons.check_rounded : Icons.add_rounded),
           label: Text(isEditing ? 'Update Sentence' : 'Add Sentence'),
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.transparent,

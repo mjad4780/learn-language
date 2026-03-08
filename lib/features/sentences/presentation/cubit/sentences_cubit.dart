@@ -1,46 +1,102 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/di/injection.dart';
 
 import '../../data/repo/sentence_repository.dart';
 import '../../../../core/services/storage_service.dart';
 import 'sentences_state.dart';
 
 /// Cubit managing user-added sentences CRUD.
+/// Owns the form controllers and editing index — no StatefulWidget needed.
 class SentencesCubit extends Cubit<SentencesState> {
-  final StorageService _storage = getIt<StorageService>();
-  final SentenceRepository _sentenceRepo = getIt<SentenceRepository>();
+  final StorageService _storage;
+  final SentenceRepository _sentenceRepo;
 
-  SentencesCubit() : super(const SentencesState());
+  final TextEditingController englishController = TextEditingController();
+  final TextEditingController arabicController = TextEditingController();
+  final formKey = GlobalKey<FormState>();
 
-  /// Load user sentences from storage.
+  SentencesCubit(this._storage, this._sentenceRepo)
+    : super(const SentencesInitial());
+
+  @override
+  Future<void> close() {
+    englishController.dispose();
+    arabicController.dispose();
+    return super.close();
+  }
+
+  // ─── Queries ───────────────────────────────────────────────────────────────
+
+  List<Map<String, dynamic>> get _sentences => _storage.getUserSentences();
+
+  int? get editingIndex => state is SentencesSuccess
+      ? (state as SentencesSuccess).editingIndex
+      : null;
+
+  bool get isEditing => editingIndex != null;
+
+  // ─── Load ──────────────────────────────────────────────────────────────────
+
   void loadSentences() {
-    emit(state.copyWith(sentences: _storage.getUserSentences()));
+    emit(const SentencesLoading());
+    try {
+      emit(SentencesSuccess(_sentences));
+    } catch (e) {
+      emit(SentencesFailure(e.toString()));
+    }
   }
 
-  /// Add a new sentence.
-  Future<void> addSentence(String english, String arabic) async {
-    emit(state.copyWith(isSaving: true));
-    await _storage.addUserSentence(english, arabic);
-    await _sentenceRepo.reload();
-    emit(
-      state.copyWith(sentences: _storage.getUserSentences(), isSaving: false),
-    );
+  // ─── Edit mode ─────────────────────────────────────────────────────────────
+
+  void startEditing(int index, String english, String arabic) {
+    englishController.text = english;
+    arabicController.text = arabic;
+    final sentences = state is SentencesSuccess
+        ? (state as SentencesSuccess).sentences
+        : _sentences;
+    emit(SentencesSuccess(sentences, editingIndex: index));
   }
 
-  /// Edit an existing sentence.
-  Future<void> editSentence(int index, String english, String arabic) async {
-    emit(state.copyWith(isSaving: true));
-    await _storage.editUserSentence(index, english, arabic);
-    await _sentenceRepo.reload();
-    emit(
-      state.copyWith(sentences: _storage.getUserSentences(), isSaving: false),
-    );
+  void cancelEditing() {
+    englishController.clear();
+    arabicController.clear();
+    emit(SentencesSuccess(_sentences));
   }
 
-  /// Delete a sentence by index.
+  // ─── CRUD ──────────────────────────────────────────────────────────────────
+
+  /// Add or update a sentence depending on whether [editingIndex] is set.
+  Future<bool> submitForm() async {
+    if (!(formKey.currentState?.validate() ?? false)) return false;
+
+    final english = englishController.text.trim();
+    final arabic = arabicController.text.trim();
+    final currentIndex = editingIndex; // Store here
+
+    emit(const SentencesLoading());
+
+    try {
+      if (currentIndex != null) {
+        await _storage.editUserSentence(currentIndex, english, arabic);
+      } else {
+        await _storage.addUserSentence(english, arabic);
+      }
+      await _sentenceRepo.reload();
+    } catch (e) {
+      emit(SentencesFailure(e.toString()));
+      return false;
+    }
+
+    englishController.clear();
+    arabicController.clear();
+    emit(SentencesSuccess(_sentences));
+    return true;
+  }
+
   Future<void> deleteSentence(int index) async {
+    emit(const SentencesLoading());
     await _storage.deleteUserSentence(index);
     await _sentenceRepo.reload();
-    emit(state.copyWith(sentences: _storage.getUserSentences()));
+    emit(SentencesSuccess(_sentences));
   }
 }

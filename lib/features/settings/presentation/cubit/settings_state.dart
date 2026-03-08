@@ -1,5 +1,17 @@
-/// Immutable state for the settings Cubit.
-class SettingsState {
+/// Sealed state hierarchy for the settings Cubit.
+sealed class SettingsState {
+  const SettingsState();
+}
+
+class SettingsInitial extends SettingsState {
+  const SettingsInitial();
+}
+
+class SettingsLoading extends SettingsState {
+  const SettingsLoading();
+}
+
+class SettingsLoaded extends SettingsState {
   final int intervalMinutes;
   final bool isRunning;
   final int dailyCount;
@@ -7,7 +19,7 @@ class SettingsState {
   final int totalSentences;
   final bool hasPermission;
 
-  const SettingsState({
+  const SettingsLoaded({
     this.intervalMinutes = 15,
     this.isRunning = false,
     this.dailyCount = 0,
@@ -16,7 +28,7 @@ class SettingsState {
     this.hasPermission = false,
   });
 
-  SettingsState copyWith({
+  SettingsLoaded copyWith({
     int? intervalMinutes,
     bool? isRunning,
     int? dailyCount,
@@ -24,7 +36,7 @@ class SettingsState {
     int? totalSentences,
     bool? hasPermission,
   }) {
-    return SettingsState(
+    return SettingsLoaded(
       intervalMinutes: intervalMinutes ?? this.intervalMinutes,
       isRunning: isRunning ?? this.isRunning,
       dailyCount: dailyCount ?? this.dailyCount,
@@ -33,25 +45,9 @@ class SettingsState {
       hasPermission: hasPermission ?? this.hasPermission,
     );
   }
+}
 
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is SettingsState &&
-          runtimeType == other.runtimeType &&
-          intervalMinutes == other.intervalMinutes &&
-          isRunning == other.isRunning &&
-          dailyCount == other.dailyCount &&
-          learnedCount == other.learnedCount &&
-          totalSentences == other.totalSentences &&
-          hasPermission == other.hasPermission;
-
-  @override
-  int get hashCode =>
-      intervalMinutes.hashCode ^
-      isRunning.hashCode ^
-      dailyCount.hashCode ^
-      learnedCount.hashCode ^
-      totalSentences.hashCode ^
-      hasPermission.hashCode;
+class SettingsFailure extends SettingsState {
+  final String message;
+  const SettingsFailure(this.message);
 }

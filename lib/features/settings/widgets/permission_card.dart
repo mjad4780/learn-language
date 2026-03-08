@@ -14,22 +14,26 @@ class PermissionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<SettingsCubit, SettingsState>(
       builder: (context, state) {
+        final hasPermission = state is SettingsLoaded
+            ? state.hasPermission
+            : false;
+
         return GlassCard(
           child: Row(
             children: [
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: state.hasPermission
+                  color: hasPermission
                       ? AppTheme.successColor.withValues(alpha: 0.15)
                       : AppTheme.errorColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
-                  state.hasPermission
+                  hasPermission
                       ? Icons.check_circle_rounded
                       : Icons.warning_rounded,
-                  color: state.hasPermission
+                  color: hasPermission
                       ? AppTheme.successColor
                       : AppTheme.errorColor,
                   size: 24,
@@ -50,9 +54,7 @@ class PermissionCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      state.hasPermission
-                          ? 'Granted'
-                          : 'Required to show overlay',
+                      hasPermission ? 'Granted' : 'Required to show overlay',
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.white.withValues(alpha: 0.5),
@@ -61,7 +63,7 @@ class PermissionCard extends StatelessWidget {
                   ],
                 ),
               ),
-              if (!state.hasPermission)
+              if (!hasPermission)
                 TextButton(
                   onPressed: () => context.read<SettingsCubit>().startService(),
                   child: const Text(

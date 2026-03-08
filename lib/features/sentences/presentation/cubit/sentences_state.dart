@@ -1,17 +1,26 @@
-/// State for the sentences management Cubit.
-class SentencesState {
+/// Sealed state hierarchy for the sentences management Cubit.
+sealed class SentencesState {
+  const SentencesState();
+}
+
+class SentencesInitial extends SentencesState {
+  const SentencesInitial();
+}
+
+class SentencesLoading extends SentencesState {
+  const SentencesLoading();
+}
+
+class SentencesSuccess extends SentencesState {
   final List<Map<String, dynamic>> sentences;
-  final bool isSaving;
 
-  const SentencesState({this.sentences = const [], this.isSaving = false});
+  /// Index of the sentence currently being edited (null = add mode).
+  final int? editingIndex;
 
-  SentencesState copyWith({
-    List<Map<String, dynamic>>? sentences,
-    bool? isSaving,
-  }) {
-    return SentencesState(
-      sentences: sentences ?? this.sentences,
-      isSaving: isSaving ?? this.isSaving,
-    );
-  }
+  const SentencesSuccess(this.sentences, {this.editingIndex});
+}
+
+class SentencesFailure extends SentencesState {
+  final String message;
+  const SentencesFailure(this.message);
 }
