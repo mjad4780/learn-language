@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme.dart';
 import '../articles/presentation/widgets/articles_entry_card.dart';
+
 import 'widgets/add_sentences_card.dart';
 import 'widgets/info_card.dart';
 import 'widgets/interval_selector.dart';

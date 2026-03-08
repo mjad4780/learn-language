@@ -36,12 +36,19 @@ class OverlayService {
     try {
       await FlutterOverlayWindow.showOverlay(
         enableDrag: true,
+        startPosition: OverlayPosition(
+          // ignore: use_build_context_synchronously
+          0,
+          -280,
+        ),
+
+        // alignment: OverlayAlignment.centerLeft,
         overlayTitle: title ?? 'Learn English',
         overlayContent: '',
         flag: OverlayFlag.defaultFlag,
         visibility: NotificationVisibility.visibilityPublic,
         positionGravity: PositionGravity.auto,
-        height: 400,
+        height: 220,
         width: WindowSize.matchParent,
       );
     } catch (e) {

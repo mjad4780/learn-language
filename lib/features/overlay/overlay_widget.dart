@@ -93,7 +93,7 @@ class _OverlayWidgetState extends State<OverlayWidget>
             opacity: _fadeAnimation,
             child: SlideTransition(
               position: _slideAnimation,
-              child: _SwipeHandler(progressController: _progressController),
+              child: SwipeHandler(progressController: _progressController),
             ),
           ),
         ),
@@ -102,10 +102,10 @@ class _OverlayWidgetState extends State<OverlayWidget>
   }
 }
 
-class _SwipeHandler extends StatelessWidget {
+class SwipeHandler extends StatelessWidget {
   final AnimationController progressController;
 
-  const _SwipeHandler({required this.progressController});
+  const SwipeHandler({super.key, required this.progressController});
 
   @override
   Widget build(BuildContext context) {
@@ -121,13 +121,16 @@ class _SwipeHandler extends StatelessWidget {
           cubit.requestNext();
         }
       },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(24),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-            child: _OverlayCard(progressController: progressController),
+      child: Align(
+        alignment: AlignmentGeometry.bottomRight,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+              child: OverlayCard(),
+            ),
           ),
         ),
       ),
@@ -135,10 +138,8 @@ class _SwipeHandler extends StatelessWidget {
   }
 }
 
-class _OverlayCard extends StatelessWidget {
-  final AnimationController progressController;
-
-  const _OverlayCard({required this.progressController});
+class OverlayCard extends StatelessWidget {
+  const OverlayCard({super.key});
 
   @override
   Widget build(BuildContext context) {

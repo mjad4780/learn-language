@@ -1,3 +1,4 @@
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:get_it/get_it.dart';
 import '../services/storage_service.dart';
 import '../services/overlay_service.dart';
@@ -14,6 +15,9 @@ Future<void> setupService() async {
   final storage = StorageService();
   await storage.init();
   getIt.registerSingleton<StorageService>(storage);
+  getIt.registerLazySingleton<FlutterBackgroundService>(
+    () => FlutterBackgroundService(),
+  );
 
   getIt.registerLazySingleton<OverlayService>(() => OverlayService());
 

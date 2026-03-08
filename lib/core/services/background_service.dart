@@ -12,7 +12,7 @@ import '../../features/sentences/data/repo/sentence_repository.dart';
 import 'storage_service.dart';
 
 Future<void> initializeBackgroundService() async {
-  final service = FlutterBackgroundService();
+  final service = getIt<FlutterBackgroundService>();
 
   await service.configure(
     androidConfiguration: AndroidConfiguration(

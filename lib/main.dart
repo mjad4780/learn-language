@@ -4,8 +4,6 @@ import 'core/app/learn_english_app.dart';
 import 'core/di/injection.dart';
 import 'core/services/background_service.dart';
 
-//@pragma("vm:entry-point")
-
 import 'features/overlay/overlay_main.dart' as overlay;
 
 void main() async {
