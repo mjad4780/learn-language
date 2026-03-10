@@ -1,5 +1,5 @@
 ---
-trigger: always_on
+trigger: manual
 ---
 
 # Project Rules and Guidelines (Production Architecture Guide)

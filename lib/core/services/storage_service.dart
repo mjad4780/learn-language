@@ -40,13 +40,7 @@ class StorageService {
     return List<int>.from(raw);
   }
 
-  Future<void> addLearnedId(int id) async {
-    final ids = getLearnedIds();
-    if (!ids.contains(id)) {
-      ids.add(id);
-      await _settingsBox.put(_learnedIdsKey, ids);
-    }
-  }
+  //
 
   // -- Last shown sentence (to avoid consecutive repeats) --
   int? getLastSentenceId() => _settingsBox.get(_lastSentenceIdKey);
@@ -66,17 +60,17 @@ class StorageService {
     return _settingsBox.get(_dailyCountKey, defaultValue: 0);
   }
 
-  Future<void> incrementDailyCount() async {
-    final today = DateTime.now().toIso8601String().substring(0, 10);
-    final savedDate = _settingsBox.get(_dailyDateKey, defaultValue: '');
-    if (savedDate != today) {
-      await _settingsBox.put(_dailyDateKey, today);
-      await _settingsBox.put(_dailyCountKey, 1);
-    } else {
-      final count = _settingsBox.get(_dailyCountKey, defaultValue: 0) as int;
-      await _settingsBox.put(_dailyCountKey, count + 1);
-    }
-  }
+  // Future<void> incrementDailyCount() async {
+  //   final today = DateTime.now().toIso8601String().substring(0, 10);
+  //   final savedDate = _settingsBox.get(_dailyDateKey, defaultValue: '');
+  //   if (savedDate != today) {
+  //     await _settingsBox.put(_dailyDateKey, today);
+  //     await _settingsBox.put(_dailyCountKey, 1);
+  //   } else {
+  //     final count = _settingsBox.get(_dailyCountKey, defaultValue: 0) as int;
+  //     await _settingsBox.put(_dailyCountKey, count + 1);
+  //   }
+  // }
 
   // -- User-added sentences --
 

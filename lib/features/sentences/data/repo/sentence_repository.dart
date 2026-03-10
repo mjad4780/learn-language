@@ -61,11 +61,6 @@ class SentenceRepository {
   /// Get the next sentence (for swipe action in overlay).
   Sentence getNextSentence() => getRandomSentence();
 
-  /// Mark a sentence as learned.
-  Future<void> markAsLearned(int id) async {
-    await _storage.addLearnedId(id);
-  }
-
   /// Get count of learned sentences.
   int get learnedCount => _storage.getLearnedIds().length;
 

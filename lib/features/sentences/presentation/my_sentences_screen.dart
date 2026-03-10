@@ -118,16 +118,16 @@ class _MySentencesView extends StatelessWidget {
                         : <Map<String, dynamic>>[];
                     return SingleChildScrollView(
                       physics: const BouncingScrollPhysics(),
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
                       child: Column(
                         children: [
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 4),
                           SentenceList(
                             sentences: sentences,
                             onDelete: (i) => _onDelete(context, i),
                             onEdit: (i, en, ar) => _onEdit(context, i, en, ar),
                           ),
-                          const SizedBox(height: 100),
+                          const SizedBox(height: 60),
                         ],
                       ),
                     );

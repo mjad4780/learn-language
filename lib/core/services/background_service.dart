@@ -105,7 +105,7 @@ void onStart(ServiceInstance service) async {
 
       // Time to show a new sentence!
       final sentence = sentenceRepo.getRandomSentence();
-      await storage.incrementDailyCount();
+      // await storage.incrementDailyCount();
 
       final data = json.encode({
         'id': DateTime.now().millisecondsSinceEpoch,

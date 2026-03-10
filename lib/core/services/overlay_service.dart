@@ -36,13 +36,7 @@ class OverlayService {
     try {
       await FlutterOverlayWindow.showOverlay(
         enableDrag: true,
-        startPosition: OverlayPosition(
-          // ignore: use_build_context_synchronously
-          0,
-          -280,
-        ),
-
-        // alignment: OverlayAlignment.centerLeft,
+        startPosition: OverlayPosition(0, -280),
         overlayTitle: title ?? 'Learn English',
         overlayContent: '',
         flag: OverlayFlag.defaultFlag,
